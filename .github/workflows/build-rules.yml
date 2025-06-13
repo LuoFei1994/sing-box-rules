@@ -20,13 +20,21 @@ jobs:
       with:
         python-version: '3.10'
 
-    # 关键修改1：使用系统级安装（需要管理员权限）
+    - name: Set Python encoding
+      run: |
+        echo "PYTHONIOENCODING=utf-8" >> $env:GITHUB_ENV
+        echo "PYTHONUTF8=1" >> $env:GITHUB_ENV
+        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+        
     - name: Install dependencies as admin
       shell: powershell
       run: |
-        # 以管理员身份安装依赖
-        Start-Process -FilePath "$env:pythonLocation\python.exe" -ArgumentList "-m pip install --upgrade pip" -Verb RunAs -Wait
-        Start-Process -FilePath "$env:pythonLocation\python.exe" -ArgumentList "-m pip install requests pyyaml" -Verb RunAs -Wait
+        # 强制使用UTF-8编码安装
+        $pipArgs = "-m pip install --upgrade pip requests pyyaml"
+        Start-Process -FilePath "$env:pythonLocation\python.exe" `
+                      -ArgumentList $pipArgs `
+                      -Verb RunAs -Wait `
+                      -NoNewWindow
         
     # 关键修改2：修复系统路径
     - name: Add Python to system PATH
