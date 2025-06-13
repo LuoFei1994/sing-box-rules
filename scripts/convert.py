@@ -3,6 +3,27 @@
 import sys
 import io
 import os
+# ========== 强制全局UTF-8编码设置 ==========
+if sys.stdout.encoding != 'UTF-8':
+    # Windows环境下无法修改编码时的回退方案
+    try:
+        # 尝试强制设置控制台编码
+        if sys.platform == "win32":
+            import ctypes
+            # 设置为UTF-8输出
+            k32 = ctypes.windll.kernel32
+            k32.SetConsoleOutputCP(65001)
+        # 回退到无编码输出
+        sys.stdout = open(sys.stdout.fileno(), 'w', encoding='utf-8', errors='replace', buffering=1)
+        sys.stderr = open(sys.stderr.fileno(), 'w', encoding='utf-8', errors='replace', buffering=1)
+    except:
+        # 最终回退到ASCII
+        sys.stdout = open(sys.stdout.fileno(), 'w', encoding='ascii', errors='replace', buffering=1)
+        sys.stderr = open(sys.stderr.fileno(), 'w', encoding='ascii', errors='replace', buffering=1)
+
+os.environ["PYTHONIOENCODING"] = "utf-8"
+# ==========================================
+
 import requests
 import subprocess  # 添加此导入以便在环境修复中使用
 # ========== 编码修复核心 ==========
@@ -17,38 +38,36 @@ os.environ["PYTHONIOENCODING"] = "utf-8"
 # ====== 优先诊断和修复环境 ======
 def fix_environment():
     """强制修复导入环境"""
-
-    # 安全打印函数避免编码错误
     def safe_print(message):
         try:
             print(message)
         except:
             pass
-            
-   # 检查是否缺少requests模块
+    
+    # 检查是否缺少requests模块
     try:
         import requests
-        safe_print(f"[1/1] Requests module ready (v{requests.__version__})")
+        safe_print(f"[INFO] Requests module ready (v{requests.__version__})")
         return
     except ImportError:
-        safe_print("[0/1] Requests module not found, installing...")
+        safe_print("[WARN] Requests module not found, installing...")
 
     # 方法1：使用系统Python安装路径（GitHub特有路径）
     system_python_path = "C:/hostedtoolcache/windows/Python/3.10.11/x64/Lib/site-packages"
     if os.path.exists(system_python_path) and system_python_path not in sys.path:
         sys.path.insert(0, system_python_path)
-        safe_print(f"[1/3] Added system path: {system_python_path}")
+        safe_print(f"[ACTION] Added system path: {system_python_path}")
         
     # 方法2：安装缺失依赖
     try:
         import requests
-        safe_print(f"[2/3] Imported requests from system path")
+        safe_print(f"[INFO] Imported requests from system path")
     except ImportError:
-        safe_print("[2/3] Installing requests...")
+        safe_print("[ACTION] Installing requests...")
         subprocess.call([sys.executable, "-m", "pip", "install", "requests"])
         import requests
         
-    safe_print(f"[3/3] Requests v{requests.__version__} ready")
+    safe_print(f"[SUCCESS] Requests v{requests.__version__} ready")
 
 # 立即执行环境修复
 fix_environment()
