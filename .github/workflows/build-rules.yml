@@ -3,40 +3,33 @@ name: Auto Update Rules
 on:
   schedule:
     - cron: '0 8 * * *'  # 每天UTC时间0点（北京时间8点）运行
-  workflow_dispatch:       # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build-rules:
     runs-on: windows-latest
+    
     steps:
-    # 1. 检出代码
     - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
-    # 2. 设置Python环境
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-    
-    # 3. 解决依赖问题的关键步骤 ⭐⭐⭐⭐⭐
+
     - name: Install dependencies
       run: |
-        # 确保使用正确的pip路径安装依赖
         $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
         & $pythonPath -m pip install --upgrade pip
         & $pythonPath -m pip install requests
-    
-    # 4. 可选：验证依赖安装情况
-    - name: Check installed packages
+        
+    - name: Create Build Directory
       run: |
-        $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
-        & $pythonPath -m pip list
-        & $pythonPath -c "import requests; print('requests version:', requests.__version__)"
-    
-    # 5. 运行转换脚本
+        New-Item -ItemType Directory -Path build -Force | Out-Null
+      
     - name: Convert Rules
       run: |
         $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
