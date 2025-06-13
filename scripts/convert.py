@@ -4,32 +4,51 @@ import sys
 import io
 import os
 import requests
+import subprocess  # 添加此导入以便在环境修复中使用
+# ========== 编码修复核心 ==========
+# 强制设置标准输出和标准错误的编码为utf-8
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')  # Python 3.7+ 特有方法
+os.environ["PYTHONIOENCODING"] = "utf-8"
+# =================================
+
 # ====== 优先诊断和修复环境 ======
 def fix_environment():
     """强制修复导入环境"""
-    # 检查是否缺少requests模块
+
+    # 安全打印函数避免编码错误
+    def safe_print(message):
+        try:
+            print(message)
+        except:
+            pass
+            
+   # 检查是否缺少requests模块
     try:
         import requests
-        print(f"成功导入 requests {requests.__version__}")
+        safe_print(f"[1/1] Requests module ready (v{requests.__version__})")
         return
     except ImportError:
-        print("环境缺失requests模块，尝试修复...")
+        safe_print("[0/1] Requests module not found, installing...")
 
     # 方法1：使用系统Python安装路径（GitHub特有路径）
     system_python_path = "C:/hostedtoolcache/windows/Python/3.10.11/x64/Lib/site-packages"
     if os.path.exists(system_python_path) and system_python_path not in sys.path:
         sys.path.insert(0, system_python_path)
-        print(f"添加系统路径: {system_python_path}")
+        safe_print(f"[1/3] Added system path: {system_python_path}")
         
-    # 方法2：安装缺失依赖（作为最后手段）
+    # 方法2：安装缺失依赖
     try:
         import requests
+        safe_print(f"[2/3] Imported requests from system path")
     except ImportError:
-        print("终极修复：系统路径中安装requests...")
+        safe_print("[2/3] Installing requests...")
         subprocess.call([sys.executable, "-m", "pip", "install", "requests"])
         import requests
         
-    print(f"最终成功导入 requests {requests.__version__}")
+    safe_print(f"[3/3] Requests v{requests.__version__} ready")
 
 # 立即执行环境修复
 fix_environment()
