@@ -47,10 +47,24 @@ jobs:
         python -c "import requests; print('Requests version: ' + requests.__version__)"
         python -m pip list
       
-    # 关键修改：使用指定路径运行脚本（简化版）
     - name: Convert Rules
       run: |
         $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
+        
+        # 列出当前目录内容（调试）
+        Get-ChildItem
+        
+        # 确保在正确的目录下运行脚本
+        cd ${{ github.workspace }}
+        
+        # 打印规则文件位置（调试）
+        if (Test-Path "rules/sources.txt") {
+            Write-Output "sources.txt found at: rules/sources.txt"
+            Get-Content "rules/sources.txt"
+        } else {
+            Write-Output "Error: sources.txt not found in rules directory"
+        }
+        
         & $pythonPath scripts/convert.py
       
     - name: Commit and Push
