@@ -26,14 +26,7 @@ os.environ["PYTHONIOENCODING"] = "utf-8"
 
 import requests
 import subprocess  # 添加此导入以便在环境修复中使用
-# ========== 编码修复核心 ==========
-# 强制设置标准输出和标准错误的编码为utf-8
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
-if hasattr(sys.stdout, 'reconfigure'):
-    sys.stdout.reconfigure(encoding='utf-8')  # Python 3.7+ 特有方法
-os.environ["PYTHONIOENCODING"] = "utf-8"
-# =================================
+
 
 # ====== 优先诊断和修复环境 ======
 def fix_environment():
@@ -81,14 +74,9 @@ import time
 import shutil
 import subprocess
 
-# ========== 编码修复核心 ==========
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
-os.environ["PYTHONIOENCODING"] = "utf-8"
-# =================================
 
+# ====== 安全打印函数 ======
 def safe_print(message):
-    #"安全的打印函数"
     try:
         print(message)
     except Exception:
@@ -183,7 +171,7 @@ def convert_rules():
             rule_data["rules"].append({"domain": [stripped]})
             domain_count += 1
         
-        ssafe_print(f"Processing completed. Valid domains: {domain_count}")
+        safe_print(f"Processing completed. Valid domains: {domain_count}")
         
         # 保存为JSON文件
         json_path = "build\\rule.json"
