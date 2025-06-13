@@ -46,9 +46,18 @@ jobs:
       
     # 关键修改4：在虚拟环境中运行脚本
     - name: Convert Rules
+      timeout-minutes: 15  # 设置15分钟超时
       run: |
         $venvPython = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "venv\Scripts\python.exe"
         & $venvPython scripts/convert.py
+
+    - name: Clean up
+      run: |
+        # 删除临时文件
+        Remove-Item -Path sing-box.zip -Force -ErrorAction SilentlyContinue
+        Remove-Item -Path sing-box.exe -Force -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Path sing-box-temp -Force -ErrorAction SilentlyContinue
+    
       
     - name: Commit and Push
       run: |
