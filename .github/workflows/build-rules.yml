@@ -20,44 +20,29 @@ jobs:
       with:
         python-version: '3.10'
 
-    # 关键修改1：创建虚拟环境
-    - name: Create virtual environment
+    # 关键解决方案：使用全局模块安装
+    - name: Install dependencies globally
       run: |
         $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
-        & $pythonPath -m venv venv
-        
-    # 关键修改2：在虚拟环境中安装依赖
-    - name: Install dependencies
-      run: |
-        $venvPython = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "venv\Scripts\python.exe"
-        & $venvPython -m pip install --upgrade pip
-        & $venvPython -m pip install requests
-        & $venvPython -m pip install pyyaml  # 添加其他必要依赖
-        
-    # 关键修改3：验证安装
+        & $pythonPath -m pip install --user --upgrade pip
+        & $pythonPath -m pip install --user requests
+        & $pythonPath -m pip install --user pyyaml
+
+    # 验证环境
     - name: Verify installation
       run: |
-        $venvPython = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "venv\Scripts\python.exe"
-        & $venvPython -c "import requests; print('Requests version:', requests.__version__)"
-        & $venvPython -m pip list
+        $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
+        & $pythonPath -c "import requests; print('Requests installed:', requests.__version__)"
+        & $pythonPath -c "import sys; print('\n'.join(sys.path))"
         
     - name: Create Build Directory
       run: New-Item -ItemType Directory -Path build -Force | Out-Null
       
-    # 关键修改4：在虚拟环境中运行脚本
+    # 关键修改：使用指定路径运行脚本
     - name: Convert Rules
-      timeout-minutes: 15  # 设置15分钟超时
       run: |
-        $venvPython = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "venv\Scripts\python.exe"
-        & $venvPython scripts/convert.py
-
-    - name: Clean up
-      run: |
-        # 删除临时文件
-        Remove-Item -Path sing-box.zip -Force -ErrorAction SilentlyContinue
-        Remove-Item -Path sing-box.exe -Force -ErrorAction SilentlyContinue
-        Remove-Item -Recurse -Path sing-box-temp -Force -ErrorAction SilentlyContinue
-    
+        $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
+        & $pythonPath scripts/convert.py
       
     - name: Commit and Push
       run: |
@@ -66,9 +51,19 @@ jobs:
         git add build/
         git commit -m "自动更新规则集 - $(Get-Date -Format 'yyyyMMdd_HHmm')"
         git push
-        
-    - name: Debug Python environment
+
+    - name: Verify environment
       run: |
-        Get-Command python | Format-List *
-        pip list
-        python -c "import sys; print(sys.path)"
+        # 检查Python安装位置
+        $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
+        & $pythonPath --version
+        
+        # 检查请求模块安装位置
+        & $pythonPath -c "import requests; print(requests.__file__)"
+        
+        # 检查系统路径
+        echo "系统PATH:"
+        echo $env:PATH
+        
+        # 检查用户模块路径
+        & $pythonPath -c "import site; print('用户site-packages:', site.getusersitepackages())"
