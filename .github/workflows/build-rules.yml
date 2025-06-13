@@ -59,6 +59,14 @@ jobs:
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
         
+        # 配置带令牌的远程 URL
+        $originUrl = "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+        git remote set-url origin $originUrl
+        
+        # 拉取远程更改（强制覆盖本地）
+        git fetch origin
+        git reset --hard origin/main
+        
         # 添加所有更改
         git add build/
         
@@ -66,12 +74,8 @@ jobs:
         $commitMessage = "自动更新规则集 - $(Get-Date -Format 'yyyyMMdd_HHmm')"
         git commit -m $commitMessage
         
-        # 配置带令牌的远程 URL
-        $originUrl = "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-        git remote set-url origin $originUrl
-        
-        # 推送更新到主分支
-        git push origin HEAD:main
+        # 推送更新到主分支（强制推送）
+        git push origin HEAD:main --force
 
     - name: Verify environment
       run: |
