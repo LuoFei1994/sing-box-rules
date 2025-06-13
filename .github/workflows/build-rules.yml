@@ -40,3 +40,9 @@ jobs:
         git add build/
         git commit -m "自动更新规则集 - $(Get-Date -Format 'yyyyMMdd_HHmm')"
         git push
+
+    - name: Debug Python environment
+      run: |
+        Get-Command python | Format-List *
+        pip list
+        python -c "import sys; print(sys.path)"
