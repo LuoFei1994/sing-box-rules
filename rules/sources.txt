@@ -1,2 +1,3 @@
 PrivacyPlus https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@main/wildcard/tif.txt
 AdGuardFingerprinting​ https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+UltimateDNSBlocklist https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/ultimate.txt
