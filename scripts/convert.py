@@ -8,7 +8,7 @@ Path("build").mkdir(exist_ok=True)
 
 # 1. 下载最新版 sing-box
 print("下载sing-box转换器...")
-tools_url = "https://github.com/SagerNet/sing-box/releases/latest/download/sing-box-windows-amd64v3.zip"
+tools_url = "https://github.com/SagerNet/sing-box/releases/download/v1.11.13/sing-box-1.11.13-windows-amd64.zip"
 tools_file = requests.get(tools_url)
 with open("temp/sing-box.zip", "wb") as f:
     f.write(tools_file.content)
