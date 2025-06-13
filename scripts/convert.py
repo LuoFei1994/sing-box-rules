@@ -232,7 +232,7 @@ def convert_rules(rule_name, rule_url):
         safe_print(f"Rule conversion failed for {rule_name}: {str(e)}")
         return False
 
-# 修改主函数
+# 修改 __main__ 部分
 if __name__ == "__main__":
     # 添加命令行参数解析
     parser = argparse.ArgumentParser(description='Convert DNS rules to SRS format')
@@ -241,6 +241,7 @@ if __name__ == "__main__":
     
     safe_print("== Script started ==")
     safe_print(f"Python version: {sys.version.split()[0]}")
+    safe_print(f"Current working directory: {os.getcwd()}")
     
     # 步骤1: 下载sing-box
     download_success = download_singbox()
@@ -250,32 +251,29 @@ if __name__ == "__main__":
         # 解析 sources.txt 文件
         sources = parse_sources_file()
         
-        if args.source:
-            # 处理特定的规则源
-            specific_found = False
-            for name, url in sources:
-                if name == args.source:
-                    safe_print(f"Starting conversion for: {name}")
-                    if not convert_rules(name, url):
-                        safe_print(f"======= Task failed for {name}! =======")
-                        sys.exit(1)
-                    specific_found = True
-                    break
-            if not specific_found:
-                safe_print(f"Error: No source named '{args.source}' found in sources.txt")
-                sys.exit(1)
-        else:
-            # 处理所有规则源
-            all_success = True
-            for name, url in sources:
-                safe_print(f"Starting conversion for: {name}")
-                if not convert_rules(name, url):
-                    all_success = False
-                    safe_print(f"======= Task failed for {name}! =======")
-            
-            if all_success:
-                safe_print("======= All tasks completed! =======")
-                sys.exit(0)
+        # 添加调试信息
+        safe_print(f"Found {len(sources)} rule sources")
+        for name, url in sources:
+            safe_print(f" - {name}: {url}")
+        
+        # 如果没有找到任何规则源，则显示警告
+        if not sources:
+            safe_print("Warning: No rule sources found. Make sure sources.txt exists and is properly formatted.")
+        
+        # 处理所有规则源
+        all_success = True
+        for name, url in sources:
+            safe_print(f"Starting conversion for: {name}")
+            if not convert_rules(name, url):
+                all_success = False
+                safe_print(f"======= Task failed for {name}! =======")
+        
+        if sources and all_success:
+            safe_print("======= All tasks completed! =======")
+            sys.exit(0)
+        elif not sources:
+            safe_print("======= Warning: No rules processed (no sources found) =======")
+            sys.exit(1)
     
     safe_print("======= Task failed! =======")
     sys.exit(1)
