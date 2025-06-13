@@ -26,27 +26,24 @@ jobs:
         echo "PYTHONUTF8=1" >> $env:GITHUB_ENV
         [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
         
-    - name: Install dependencies as admin
-      shell: powershell
+    # 修改安装依赖步骤
+    - name: Install dependencies
       run: |
-        # 强制使用UTF-8编码安装
-        $pipArgs = "-m pip install --upgrade pip requests pyyaml"
-        Start-Process -FilePath "$env:pythonLocation\python.exe" `
-                      -ArgumentList $pipArgs `
-                      -Verb RunAs -Wait `
-                      -NoNewWindow
+        $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
+        & $pythonPath -m pip install --upgrade pip
+        & $pythonPath -m pip install requests pyyaml
         
-    # 关键修改2：修复系统路径
+    # 关键修改2：修复系统路径（保持不变）
     - name: Add Python to system PATH
       run: |
         $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "Scripts"
         echo "PYTHONPATH=$pythonPath;$pythonLocation" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         echo "PATH=$pythonPath;$env:PATH" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         
-    # 关键修改3：验证环境
+    # 修改验证环境步骤，使用英文输出
     - name: Verify installation
       run: |
-        python -c "import requests; print('导入requests成功：' + requests.__version__)"
+        python -c "import requests; print('Requests version: ' + requests.__version__)"
         python -m pip list
       
     # 关键修改：使用指定路径运行脚本
