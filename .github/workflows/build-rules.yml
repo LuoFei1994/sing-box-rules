@@ -55,17 +55,23 @@ jobs:
       
     - name: Commit and Push
       run: |
+        # 设置 Git 身份
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
+        
+        # 添加所有更改
         git add build/
-        git commit -m "自动更新规则集 - $(Get-Date -Format 'yyyyMMdd_HHmm')"
         
-        # 使用安全方式推送
-        git config --global credential.helper store
-        $pat = "${{ secrets.GITHUB_TOKEN }}"
-        echo "https://$pat@github.com" | Out-File -FilePath "$env:HOME\.git-credentials" -Encoding ascii
+        # 提交更改（使用当前时间）
+        $commitMessage = "自动更新规则集 - $(Get-Date -Format 'yyyyMMdd_HHmm')"
+        git commit -m $commitMessage
         
-        git push
+        # 配置带令牌的远程 URL
+        $originUrl = "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
+        git remote set-url origin $originUrl
+        
+        # 推送更新到主分支
+        git push origin HEAD:main
 
     - name: Verify environment
       run: |
