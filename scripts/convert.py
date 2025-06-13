@@ -66,6 +66,32 @@ def fix_environment():
 fix_environment()
 # =================================
 
+# 在导入部分添加以下模块
+import re
+import argparse
+
+# 添加新的函数来处理 sources.txt
+def parse_sources_file(file_path="sources.txt"):
+    """解析sources.txt文件，返回规则源列表"""
+    sources = []
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                # 跳过空行和注释
+                if not line or line.startswith("#"):
+                    continue
+                
+                # 提取名称和URL
+                match = re.match(r"(\S+)\s+(\S+)", line)
+                if match:
+                    name = match.group(1)
+                    url = match.group(2)
+                    sources.append((name, url))
+        return sources
+    except Exception as e:
+        safe_print(f"Error reading sources.txt: {str(e)}")
+        return []
 # 现在可以安全导入其它模块
 
 import zipfile
@@ -140,7 +166,7 @@ def download_singbox():
         safe_print(f"下载sing-box失败: {str(e)}")
         return False
 
-def convert_rules():
+def convert_rules(rule_name, rule_url):
     """转换规则集为SRS格式"""
     try:
         # 规则源URL
@@ -149,8 +175,7 @@ def convert_rules():
         # 创建build目录
         os.makedirs("build", exist_ok=True)
         
-        # 下载规则
-        safe_print(f"Downloading ruleset: {rule_url}")
+        safe_print(f"Downloading ruleset: {rule_name} ({rule_url})")
         response = requests.get(rule_url, timeout=60)
         response.encoding = 'utf-8'
         
@@ -171,16 +196,16 @@ def convert_rules():
             rule_data["rules"].append({"domain": [stripped]})
             domain_count += 1
         
-        safe_print(f"Processing completed. Valid domains: {domain_count}")
+        safe_print(f"Processing completed for {rule_name}. Valid domains: {domain_count}")
         
         # 保存为JSON文件
-        json_path = "build\\rule.json"
+        json_path = f"build\\{rule_name}.json"
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(rule_data, f, indent=2)
         safe_print(f"JSON rule file saved: {json_path}")
         
         # 转换命令（使用绝对路径）
-        srs_path = os.path.abspath("build\\rule.srs")
+        srs_path = os.path.abspath(f"build\\{rule_name}.srs")
         safe_print("Converting to SRS format...")
         
         # 确保使用正确的路径
@@ -206,22 +231,53 @@ def convert_rules():
         return False
             
     except Exception as e:
-        safe_print(f"Rule conversion failed: {str(e)}")
+        safe_print(f"Rule conversion failed for {rule_name}: {str(e)}")
         return False
 
+# 修改主函数
 if __name__ == "__main__":
+    # 添加命令行参数解析
+    parser = argparse.ArgumentParser(description='Convert DNS rules to SRS format')
+    parser.add_argument('--source', type=str, help='Specific rule source to process')
+    args = parser.parse_args()
+    
     safe_print("== Script started ==")
     safe_print(f"Python version: {sys.version.split()[0]}")
     
     # 步骤1: 下载sing-box
     download_success = download_singbox()
     
-    # 步骤2: 转换规则
+    # 步骤2: 处理规则
     if download_success and os.path.exists("sing-box.exe"):
-        safe_print("Starting rule conversion...")
-        if convert_rules():
-            safe_print("======= All tasks completed! =======")
-            sys.exit(0)
+        # 解析 sources.txt 文件
+        sources = parse_sources_file()
+        
+        if args.source:
+            # 处理特定的规则源
+            specific_found = False
+            for name, url in sources:
+                if name == args.source:
+                    safe_print(f"Starting conversion for: {name}")
+                    if not convert_rules(name, url):
+                        safe_print(f"======= Task failed for {name}! =======")
+                        sys.exit(1)
+                    specific_found = True
+                    break
+            if not specific_found:
+                safe_print(f"Error: No source named '{args.source}' found in sources.txt")
+                sys.exit(1)
+        else:
+            # 处理所有规则源
+            all_success = True
+            for name, url in sources:
+                safe_print(f"Starting conversion for: {name}")
+                if not convert_rules(name, url):
+                    all_success = False
+                    safe_print(f"======= Task failed for {name}! =======")
+            
+            if all_success:
+                safe_print("======= All tasks completed! =======")
+                sys.exit(0)
     
     safe_print("======= Task failed! =======")
     sys.exit(1)
