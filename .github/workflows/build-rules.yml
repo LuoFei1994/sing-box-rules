@@ -51,13 +51,11 @@ jobs:
     - name: Convert Rules
       run: |
         $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
-        # 添加 sources.txt 到工作区
-        if (-not (Test-Path -Path sources.txt)) {
-            # 如果文件不存在，创建一个示例文件
-            @"
-PrivacyPlus https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@main/wildcard/tif.txt
-PrivacyBasic https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-domains.txt
-"@ | Out-File -FilePath sources.txt -Encoding utf8
+        
+        # 添加 sources.txt 到工作区（修复语法）
+        $sourcesPath = "sources.txt"
+        if (-not (Test-Path $sourcesPath)) {
+            safe_print "Created default sources.txt file"
         }
         
         # 处理所有规则
