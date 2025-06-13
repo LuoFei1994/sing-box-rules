@@ -3,6 +3,28 @@
 import sys
 import io
 import os
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import sys
+import os
+
+# ================== 虚拟环境验证 ==================
+VENV_PATH = os.path.join(os.path.dirname(__file__), '..', 'venv')
+if os.path.exists(VENV_PATH):
+    # 将虚拟环境添加到系统路径
+    sys.path.insert(0, os.path.join(VENV_PATH, 'Lib', 'site-packages'))
+    print(f"使用虚拟环境路径: {VENV_PATH}")
+
+# ================== 模块安全导入 ==================
+try:
+    import requests
+    print(f"成功导入requests v{requests.__version__}")
+except ImportError:
+    # 作为最后手段使用环境变量中的Python路径
+    python_exec = sys.executable
+    print(f"尝试使用{python_exec}安装requests...")
+    os.system(f'"{python_exec}" -m pip install requests')
+    import requests
 try:
     import requests
 except ImportError:
