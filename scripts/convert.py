@@ -3,35 +3,40 @@
 import sys
 import io
 import os
-# ============== 强制添加环境路径 ==============
-def add_module_paths():
-    """确保模块路径正确"""
-    # Windows 环境下的默认用户模块路径
-    user_site = os.path.join(os.path.expanduser("~"), 'AppData', 'Roaming', 'Python', 'Python310', 'site-packages')
-    # GitHub Actions 环境特有的路径
-    actions_site = os.path.join(os.getcwd(), 'Python', 'Python310', 'site-packages')
-    
-    for path in [user_site, actions_site]:
-        if os.path.exists(path) and path not in sys.path:
-            sys.path.insert(0, path)
-            print(f"添加路径: {path}")
-
-# 调用路径修复函数
-add_module_paths()
-# =============================================
-
-# 强制重新导入requests模块
-try:
-    import requests
-    print(f"成功导入 requests {requests.__version__}")
-except ImportError:
-    print(f"最终尝试安装 requests...")
-    os.system(f"{sys.executable} -m pip install requests")
-    import requests
-    print(f"已安装 requests {requests.__version__}")
-
-
 import requests
+# ====== 优先诊断和修复环境 ======
+def fix_environment():
+    """强制修复导入环境"""
+    # 检查是否缺少requests模块
+    try:
+        import requests
+        print(f"成功导入 requests {requests.__version__}")
+        return
+    except ImportError:
+        print("环境缺失requests模块，尝试修复...")
+
+    # 方法1：使用系统Python安装路径（GitHub特有路径）
+    system_python_path = "C:/hostedtoolcache/windows/Python/3.10.11/x64/Lib/site-packages"
+    if os.path.exists(system_python_path) and system_python_path not in sys.path:
+        sys.path.insert(0, system_python_path)
+        print(f"添加系统路径: {system_python_path}")
+        
+    # 方法2：安装缺失依赖（作为最后手段）
+    try:
+        import requests
+    except ImportError:
+        print("终极修复：系统路径中安装requests...")
+        subprocess.call([sys.executable, "-m", "pip", "install", "requests"])
+        import requests
+        
+    print(f"最终成功导入 requests {requests.__version__}")
+
+# 立即执行环境修复
+fix_environment()
+# =================================
+
+# 现在可以安全导入其它模块
+
 import zipfile
 import json
 import time
