@@ -3,37 +3,34 @@
 import sys
 import io
 import os
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-import sys
-import os
+# ============== 强制添加环境路径 ==============
+def add_module_paths():
+    """确保模块路径正确"""
+    # Windows 环境下的默认用户模块路径
+    user_site = os.path.join(os.path.expanduser("~"), 'AppData', 'Roaming', 'Python', 'Python310', 'site-packages')
+    # GitHub Actions 环境特有的路径
+    actions_site = os.path.join(os.getcwd(), 'Python', 'Python310', 'site-packages')
+    
+    for path in [user_site, actions_site]:
+        if os.path.exists(path) and path not in sys.path:
+            sys.path.insert(0, path)
+            print(f"添加路径: {path}")
 
-# ================== 虚拟环境验证 ==================
-VENV_PATH = os.path.join(os.path.dirname(__file__), '..', 'venv')
-if os.path.exists(VENV_PATH):
-    # 将虚拟环境添加到系统路径
-    sys.path.insert(0, os.path.join(VENV_PATH, 'Lib', 'site-packages'))
-    print(f"使用虚拟环境路径: {VENV_PATH}")
+# 调用路径修复函数
+add_module_paths()
+# =============================================
 
-# ================== 模块安全导入 ==================
+# 强制重新导入requests模块
 try:
     import requests
-    print(f"成功导入requests v{requests.__version__}")
+    print(f"成功导入 requests {requests.__version__}")
 except ImportError:
-    # 作为最后手段使用环境变量中的Python路径
-    python_exec = sys.executable
-    print(f"尝试使用{python_exec}安装requests...")
-    os.system(f'"{python_exec}" -m pip install requests')
+    print(f"最终尝试安装 requests...")
+    os.system(f"{sys.executable} -m pip install requests")
     import requests
-try:
-    import requests
-except ImportError:
-    import os
-    import sys
-    import subprocess
-    print("自动安装缺失的requests模块...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
-    import requests  # 重试导入
+    print(f"已安装 requests {requests.__version__}")
+
+
 import requests
 import zipfile
 import json
