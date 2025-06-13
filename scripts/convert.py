@@ -3,6 +3,15 @@
 import sys
 import io
 import os
+try:
+    import requests
+except ImportError:
+    import os
+    import sys
+    import subprocess
+    print("自动安装缺失的requests模块...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "requests"])
+    import requests  # 重试导入
 import requests
 import zipfile
 import json
