@@ -169,8 +169,6 @@ def download_singbox():
 def convert_rules(rule_name, rule_url):
     """转换规则集为SRS格式"""
     try:
-        # 规则源URL
-        rule_url = "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-domains.txt"
         
         # 创建build目录
         os.makedirs("build", exist_ok=True)
