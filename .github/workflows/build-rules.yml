@@ -51,7 +51,20 @@ jobs:
     - name: Convert Rules
       run: |
         $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
+        # 添加 sources.txt 到工作区
+        if (-not (Test-Path -Path sources.txt)) {
+            # 如果文件不存在，创建一个示例文件
+            @"
+PrivacyPlus https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@main/wildcard/tif.txt
+PrivacyBasic https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-domains.txt
+"@ | Out-File -FilePath sources.txt -Encoding utf8
+        }
+        
+        # 处理所有规则
         & $pythonPath scripts/convert.py
+        
+        # 如果需要处理特定规则，使用如下命令：
+        # & $pythonPath scripts/convert.py --source PrivacyPlus
       
     - name: Commit and Push
       run: |
