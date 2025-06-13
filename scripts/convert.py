@@ -71,7 +71,7 @@ import re
 import argparse
 
 # 添加新的函数来处理 sources.txt
-def parse_sources_file(file_path="sources.txt"):
+def parse_sources_file(file_path="rules/sources.txt"):
     """解析sources.txt文件，返回规则源列表"""
     sources = []
     try:
@@ -90,7 +90,7 @@ def parse_sources_file(file_path="sources.txt"):
                     sources.append((name, url))
         return sources
     except Exception as e:
-        safe_print(f"Error reading sources.txt: {str(e)}")
+        safe_print(f"Error reading sources file at {file_path}: {str(e)}")
         return []
 # 现在可以安全导入其它模块
 
