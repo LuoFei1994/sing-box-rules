@@ -47,10 +47,19 @@ jobs:
         python -c "import requests; print('Requests version: ' + requests.__version__)"
         python -m pip list
       
-    # 关键修改：使用指定路径运行脚本
+    # 关键修改：使用指定路径运行脚本（已修复格式问题）
     - name: Convert Rules
       run: |
         $pythonPath = Join-Path -Path $env:pythonLocation -ChildPath "python.exe"
+        $sourcesPath = "sources.txt"
+        if (-not (Test-Path $sourcesPath)) {
+            $lines = @(
+                "PrivacyPlus https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@main/wildcard/tif.txt"
+                "PrivacyBasic https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-domains.txt"
+            )
+            $lines | Out-File -FilePath $sourcesPath -Encoding utf8
+            Write-Output "Created default sources.txt file"
+        }
         & $pythonPath scripts/convert.py
       
     - name: Commit and Push
