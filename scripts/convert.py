@@ -37,7 +37,7 @@ os.environ["PYTHONIOENCODING"] = "utf-8"
 
 # ====== 优先诊断和修复环境 ======
 def fix_environment():
-    """强制修复导入环境"""
+    # 强制修复导入环境"
     def safe_print(message):
         try:
             print(message)
@@ -88,7 +88,7 @@ os.environ["PYTHONIOENCODING"] = "utf-8"
 # =================================
 
 def safe_print(message):
-    """安全的打印函数"""
+    #"安全的打印函数"
     try:
         print(message)
     except Exception:
